@@ -1,98 +1,147 @@
 ---
 name: prompt-engineer
-description: Makes a repository AI-native by creating AGENTS.md, .cursorrules, Claude skills, and documentation that helps any AI agent understand and work with the codebase. Use when the user asks to "make repo AI-ready", "add cursor rules", "create AGENTS.md", "set up for AI coding", or "make agents work better". Don't use for deployment, monitoring, or security.
+description: Makes a repository AI-native by creating AGENTS.md, .cursorrules, and documentation that helps any AI agent understand the codebase. Follows the WHAT/WHY/HOW framework from best practices. Use when the user asks to "make repo AI-ready", "add cursor rules", "create AGENTS.md", "set up for AI coding", or "make agents work better". Don't use for deployment (use deployment-engineer), monitoring (use monitoring-setup), or code organization (use repo-structurer).
 ---
 
 # Prompt Engineer
 
-Makes your repository "AI-native" — so any coding agent (Claude Code, Cursor, Copilot) can understand and work with your codebase effectively.
+Makes your repository "AI-native" so any coding agent (Claude Code, Cursor, Copilot, Gemini CLI, Codex) can understand and work with your codebase effectively.
 
 ## How It Works
 
-1. Analyze the codebase to understand patterns and conventions
-2. Create AGENTS.md with project context, commands, and boundaries
+1. Analyze codebase patterns and conventions
+2. Create AGENTS.md following the WHAT/WHY/HOW framework
 3. Create .cursorrules with code style and framework patterns
 4. Add directory-level READMEs for agent navigation
-5. Document key architectural decisions
+
+## Key Principle
+
+**Source:** [HumanLayer - "Writing a good CLAUDE.md"](https://www.humanlayer.dev/blog/writing-a-good-claude-md)
+
+Claude Code injects CLAUDE.md with a system note: "this context may or may not be relevant to your tasks." This means agents WILL IGNORE instructions that aren't universally applicable. Only include information that's relevant to EVERY task.
 
 ## Step-by-Step Procedure
 
 ### Step 1: Analyze Codebase Patterns
-Read 5-10 key files to understand:
-- Naming conventions (camelCase, snake_case, kebab-case)
-- File organization patterns
-- Import patterns
-- Error handling patterns
-- State management approach
-- API patterns (REST, GraphQL, tRPC)
+```bash
+# Identify tech stack
+cat package.json 2>/dev/null | head -30
+cat requirements.txt pyproject.toml 2>/dev/null | head -20
+
+# Identify naming conventions
+find . -name "*.ts" -not -path "*/node_modules/*" | head -5 | xargs head -20
+
+# Identify file structure pattern
+find . -type f -not -path "./.git/*" -not -path "*/node_modules/*" -not -path "*/.next/*" -maxdepth 3 | head -40
+
+# Identify available scripts/commands
+cat package.json 2>/dev/null | python3 -c "import sys,json; [print(f'  {k}: {v}') for k,v in json.load(sys.stdin).get('scripts',{}).items()]" 2>/dev/null
+
+# Check for existing agent config
+ls AGENTS.md CLAUDE.md .cursorrules .cursor/rules/ .github/copilot/ 2>/dev/null
+```
 
 ### Step 2: Create AGENTS.md
 
-Follow this structure (adapted from GitHub's analysis of 2,500+ AGENTS.md files):
+**Framework:** WHAT (tech & structure) → WHY (purpose) → HOW (commands & verification)
+
+Generate this template filled with detected values:
 
 ```markdown
 # AGENTS.md
 
 ## Project Overview
-{1-2 sentences: what this project does}
+{One sentence: what this project does and who it's for.}
 
 ## Tech Stack
-- Frontend: {framework}
-- Backend: {framework}
-- Database: {type}
-- Hosting: {platform}
-- Auth: {provider}
+- **Runtime:** {Node.js 20 / Python 3.11 / etc.}
+- **Framework:** {Next.js 14 / FastAPI / etc.}
+- **Database:** {PostgreSQL + Prisma / MongoDB + Mongoose / etc.}
+- **Styling:** {Tailwind CSS / styled-components / etc.}
+- **Auth:** {NextAuth / Clerk / Supabase Auth / etc.}
+- **Hosting:** {Vercel / AWS / Railway / etc.}
 
 ## Commands
 ```bash
-npm run dev     # Start development server
-npm run build   # Production build
-npm test        # Run tests
-npm run lint    # Run linter
+{package_manager} run dev     # Start development server
+{package_manager} run build   # Production build
+{package_manager} run test    # Run tests
+{package_manager} run lint    # Run linter
 ```
 
-## File Structure
-{Key directories and their purpose}
+## Project Structure
+```
+{root}/
+├── app/          # {description}
+├── components/   # {description}
+├── lib/          # {description}
+├── prisma/       # {description}
+└── public/       # {description}
+```
 
 ## Conventions
-- {Pattern 1}
-- {Pattern 2}
+- {Naming convention: e.g., "camelCase for variables, PascalCase for components"}
+- {Import convention: e.g., "Use @/ alias for project imports"}
+- {Error handling: e.g., "Use try/catch with structured logging via pino"}
+- {State management: e.g., "Server components by default, client only when needed"}
 
 ## Boundaries
-- DO NOT modify {files/patterns}
-- DO NOT change {configuration}
-- ALWAYS {practice}
+- DO NOT modify `prisma/schema.prisma` without running `npx prisma generate`
+- DO NOT commit `.env` files — use `.env.example` for documentation
+- DO NOT use `any` type in TypeScript — use proper types or `unknown`
+- ALWAYS run `{package_manager} run build` before committing to verify no errors
 ```
 
 ### Step 3: Create .cursorrules
 
 ```markdown
-# Project Rules
+# {Project Name} — Cursor Rules
 
 ## Code Style
-- Use {naming convention}
-- Prefer {pattern A} over {pattern B}
-- Always {practice}
-
-## Framework Patterns
-- {Framework-specific rule 1}
-- {Framework-specific rule 2}
+- Use {detected naming convention}
+- Prefer {detected import style}
+- {Framework-specific: e.g., "Use Server Components by default in Next.js App Router"}
+- {Error handling: e.g., "Always use try/catch, never silently swallow errors"}
 
 ## File Organization
-- {Where to put new files}
-- {Naming conventions for files}
+- New pages go in `app/{route}/page.tsx`
+- Shared components go in `components/`
+- Utility functions go in `lib/`
+- API routes go in `app/api/{route}/route.ts`
 
 ## Do NOT
-- {Anti-pattern 1}
-- {Anti-pattern 2}
+- Use `var` — use `const` or `let`
+- Use `any` type — use proper types
+- Put business logic in components — extract to `lib/`
+- Commit without building first
 ```
 
-### Step 4: Key Principles (from GitHub's research)
-- **Put commands early** — agents reference them often
-- **Be specific** — "You are a test engineer for React" beats "You are helpful"
-- **Set boundaries** — what NOT to modify is as important as what to do
-- **Give examples** — show actual code patterns from the project
-- **Keep it under 500 lines** — agents have limited context
+### Step 4: Verify Agent Config Works
+
+Test by asking the agent: "What tech stack does this project use?"
+- If agent answers correctly from AGENTS.md: ✅ working
+- If agent reads source files instead: ⚠️ AGENTS.md may need more specificity
 
 ## Output Format
-List all files created with a brief explanation of what each teaches the agent.
+
+```markdown
+## 🤖 AI-Readiness Report
+
+### Files Created
+| File | Purpose | Size |
+|------|---------|------|
+| `AGENTS.md` | Onboards any AI agent to the codebase (WHAT/WHY/HOW) | {N} lines |
+| `.cursorrules` | Code style + framework rules for Cursor IDE | {N} lines |
+| `.cursor/rules/{name}.mdc` | Scoped rules for specific directories | {N} lines |
+
+### What Each File Teaches the Agent
+- **AGENTS.md:** Tech stack ({stack}), commands ({N} scripts), structure ({N} directories), conventions ({N} rules), boundaries ({N} guardrails)
+- **.cursorrules:** Code style ({N} rules), file organization ({N} patterns), anti-patterns ({N} "Do NOTs")
+
+### Verification
+- [x] AGENTS.md covers WHAT/WHY/HOW
+- [x] Only universally-applicable instructions included (per HumanLayer best practice)
+- [x] Commands listed early (per GitHub AGENTS.md analysis)
+- [x] Boundaries set (what NOT to do)
+- [ ] Test: Ask agent "What tech stack does this project use?" → should answer from AGENTS.md
+```
