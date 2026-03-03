@@ -106,8 +106,6 @@ Areas we'd love help with:
 
 Apache 2.0 — see [LICENSE](LICENSE).
 
-## Built By
+---
 
-Created by [Osman Ramadan](https://github.com/osmanio2), co-founder of [HTML Builder for Word](https://htmlbuilderforword.com) and [Agemo](https://agemo.ai) (builders of [CodeWords](https://codewords.agemo.ai)).
-
-Inspired by the belief that every repo should be production-ready, agent-friendly, and maintainable — regardless of how it was built.
+*Inspired by the belief that every repo should be production-ready, agent-friendly, and maintainable — regardless of how it was built.*
