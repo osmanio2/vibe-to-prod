@@ -62,25 +62,6 @@ vibe-to-prod has been tested on real repositories across multiple stacks:
 
 **Automated evaluation:** 94% average across both Claude Haiku 4.5 and GPT-4.1-mini judges. 100% structural validation pass rate.
 
-## Eating Our Own Dogfood
-
-We ran vibe-to-prod on itself. Here's the self-audit:
-
-| # | Category | Status | Notes |
-|---|----------|--------|-------|
-| 1 | Environment Setup | ⚠️ | No .env needed (docs-only repo) |
-| 2 | CI/CD Pipeline | ✅ | GitHub Actions validates all skills on every PR |
-| 3 | Documentation | ✅ | README, CONTRIBUTING, AGENTS.md, tests guide |
-| 4 | Error Tracking | ❌ | N/A — no runtime code to track |
-| 5 | Deployment | ⚠️ | install.sh works, no package manager yet |
-| 6 | Security | ✅ | No secrets, comprehensive .gitignore |
-| 7 | Cost Awareness | ✅ | Zero hosting costs (static repo) |
-| 8 | Integration Health | ❌ | N/A — no app integrations needed |
-| 9 | LLM-Readiness | ✅ | AGENTS.md + .cursor/rules + 9 structured skills |
-| 10 | Code Organization | ✅ | Clean skills/ structure, consistent naming |
-
-**Score: 6.5/10** — The ❌ categories (Error Tracking, Integration Health) are genuinely not applicable for a documentation repository. For what this repo *is* — an installable set of agent skills — it practices what it preaches.
-
 ## Skills
 
 Each skill is a focused expert. Install all or pick what you need:
@@ -113,6 +94,25 @@ Skills follow the [Agent Skills Standard](https://agentskills.io/). Each skill:
 - References scripts and checklists for deterministic tasks
 - Stays under 500 lines to keep the context window lean
 - Defines a mandatory output format for consistent results
+
+## Self-Audit
+
+We ran vibe-to-prod on itself. Here's the score:
+
+| # | Category | Status | Notes |
+|---|----------|--------|-------|
+| 1 | Environment Setup | ⚠️ | No .env needed (docs-only repo) |
+| 2 | CI/CD Pipeline | ✅ | GitHub Actions validates all skills on every PR |
+| 3 | Documentation | ✅ | README, CONTRIBUTING, AGENTS.md, tests guide |
+| 4 | Error Tracking | ❌ | N/A — no runtime code to track |
+| 5 | Deployment | ⚠️ | install.sh works, no package manager yet |
+| 6 | Security | ✅ | No secrets, comprehensive .gitignore |
+| 7 | Cost Awareness | ✅ | Zero hosting costs (static repo) |
+| 8 | Integration Health | ❌ | N/A — no app integrations needed |
+| 9 | LLM-Readiness | ✅ | AGENTS.md + .cursor/rules + 9 structured skills |
+| 10 | Code Organization | ✅ | Clean skills/ structure, consistent naming |
+
+**Score: 6.5/10** — The ❌ categories (Error Tracking, Integration Health) are not applicable for a documentation repository. For what this repo *is* — an installable set of agent skills — it practices what it preaches.
 
 ## Contributing
 
