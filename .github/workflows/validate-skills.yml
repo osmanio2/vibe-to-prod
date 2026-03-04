@@ -1,0 +1,97 @@
+name: Validate Skills
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'skills/**'
+      - '.github/workflows/validate-skills.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'skills/**'
+      - '.github/workflows/validate-skills.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Validate SKILL.md files
+        run: |
+          python3 << 'EOF'
+          import yaml, sys
+          from pathlib import Path
+
+          errors = []
+          skills_dir = Path("skills")
+          skill_files = list(skills_dir.glob("*/SKILL.md"))
+
+          if not skill_files:
+              print("No SKILL.md files found")
+              sys.exit(1)
+
+          print(f"Validating {len(skill_files)} skills...\n")
+
+          for skill_file in skill_files:
+              skill_name = skill_file.parent.name
+              content = skill_file.read_text(encoding='utf-8')
+
+              if not content.startswith('---\n'):
+                  errors.append(f"{skill_name}: Missing YAML frontmatter")
+                  continue
+
+              parts = content.split('---\n', 2)
+              if len(parts) < 3:
+                  errors.append(f"{skill_name}: Invalid frontmatter format")
+                  continue
+
+              try:
+                  fm = yaml.safe_load(parts[1])
+              except yaml.YAMLError as e:
+                  errors.append(f"{skill_name}: Invalid YAML - {e}")
+                  continue
+
+              if not isinstance(fm, dict):
+                  errors.append(f"{skill_name}: Frontmatter must be a dict")
+                  continue
+
+              if fm.get('name') != skill_name:
+                  errors.append(f"{skill_name}: name '{fm.get('name')}' != directory '{skill_name}'")
+
+              desc = fm.get('description', '')
+              if not desc:
+                  errors.append(f"{skill_name}: Missing description")
+              else:
+                  dl = desc.lower()
+                  if 'use when' not in dl:
+                      errors.append(f"{skill_name}: Description missing 'Use when' trigger")
+                  if "don't use" not in dl and "do not use" not in dl:
+                      errors.append(f"{skill_name}: Description missing 'Don't use' hint")
+
+              lines = len(content.splitlines())
+              if lines > 500:
+                  errors.append(f"{skill_name}: {lines} lines (max 500)")
+
+              print(f"  ✓ {skill_name} ({lines} lines)")
+
+          print(f"\n{'='*50}")
+          if errors:
+              print(f"❌ {len(errors)} error(s):\n")
+              for e in errors:
+                  print(f"  • {e}")
+              sys.exit(1)
+          else:
+              print(f"✅ All {len(skill_files)} skills passed!")
+          EOF
